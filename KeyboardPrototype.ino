@@ -1,12 +1,14 @@
+#include "Keyboard.h"
+
 typedef int8_t pin_t;
 typedef int state_t;
 
 unsigned long debounceDelay = 50;
 
-const pin_t columnsPins[] = { 8, 9, 10 };
+const pin_t columnsPins[] = { 7, 6, 5 };
 const int8_t nColumns = sizeof(columnsPins) / sizeof(pin_t);
 
-const pin_t rowsPins[] = { 4, 5, 6, 7 };
+const pin_t rowsPins[] = { 11, 10, 9, 8 };
 const int8_t nRows = sizeof(rowsPins) / sizeof(pin_t);
 
 const char *rowColumnMappings[nRows][nColumns] = {
@@ -42,8 +44,6 @@ void setup() {
     yield();
   }
 
-  Serial.println("Setup Begin!");
-
   // Setup pins
   for(int c = 0; c < nColumns; c++) {
     pinMode(columnPin(c), OUTPUT);
@@ -61,7 +61,8 @@ void setup() {
       rowColumnDebouncingTime[r][c] = 0;
     }
   }
-  Serial.println("Setup Complete!");
+
+  Keyboard.begin();
 }
 
 void loop() {
@@ -97,11 +98,18 @@ void loop() {
 }
 
 void rowColumnDown(int row, int column) {
-  Serial.print("DOWN ");
-  Serial.println(rowColumnMap(row, column));
+  char *keyText = rowColumnMap(row, column);
+
+  //Serial.print("DOWN ");
+  
+  for(int i = 0; keyText[i] != '\0'; i++) {
+    Keyboard.write(keyText[i]);
+    //Serial.println(keyText[i]);
+  }
+  //Serial.println();  
 }
 
 void rowColumnUp(int row, int column) {
-  Serial.print("UP ");
-  Serial.println(rowColumnMap(row, column));
+  //Serial.print("UP ");
+  //Serial.println(rowColumnMap(row, column));
 }
