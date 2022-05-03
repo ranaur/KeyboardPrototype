@@ -1,5 +1,16 @@
 #include "Keyboard.h"
 
+//#define DEBUG
+#undef DEBUG
+
+#ifdef DEBUG
+#define debug(a) { Serial.print(a); }
+#define debugln(a) { Serial.println(a); }
+#else
+#define debug(a)
+#define debugln(a)
+#endif
+
 typedef int8_t pin_t;
 typedef int state_t;
 
@@ -37,12 +48,15 @@ int8_t rowPin(int index) {
 }
 
 void setup() {
-  Serial.begin(9600);
   
+#ifdef DEBUG
+  Serial.begin(9600);
+
   // Wait for USB Serial (Leonardo)
   while (!Serial) {
     yield();
   }
+#endif
 
   // Setup pins
   for(int c = 0; c < nColumns; c++) {
@@ -66,7 +80,7 @@ void setup() {
 }
 
 void loop() {
-  //Serial.println("NEW LOOP");
+  //debugln("NEW LOOP");
   for(int c = 0; c < nColumns; c++) {
     digitalWrite(columnPin(c - 1), HIGH);
     digitalWrite(columnPin(c), LOW);
@@ -98,18 +112,25 @@ void loop() {
 }
 
 void rowColumnDown(int row, int column) {
-  char *keyText = rowColumnMap(row, column);
+  const char *keyText = rowColumnMap(row, column);
 
-  //Serial.print("DOWN ");
+  debug("DOWN ");
   
   for(int i = 0; keyText[i] != '\0'; i++) {
-    Keyboard.write(keyText[i]);
-    //Serial.println(keyText[i]);
+    Keyboard.press(keyText[i]);
+    debug(keyText[i]);
   }
-  //Serial.println();  
+  debugln("");  
 }
 
 void rowColumnUp(int row, int column) {
-  //Serial.print("UP ");
-  //Serial.println(rowColumnMap(row, column));
+  const char *keyText = rowColumnMap(row, column);
+
+  debug("UP ");
+  
+  for(int i = 0; keyText[i] != '\0'; i++) {
+    Keyboard.release(keyText[i]);
+    debug(keyText[i]);
+  }
+  debugln("");  
 }
