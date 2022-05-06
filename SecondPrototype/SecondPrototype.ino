@@ -10,7 +10,7 @@ const char *rowColumnMappings[nRows][nColumns] = {
 };
 */
 
-MatrixKeyboard matrix(nRows, nColumns);
+MatrixKeyboard<nRows, nColumns> matrix;
 
 void setup() {
   
@@ -24,7 +24,9 @@ void setup() {
 #endif
 
   matrix.setup(rowsPins, columnsPins);
-  matrixKeyboardDriver::setup(&matrix);
+  matrix.setDownEvent(matrixKeyboardDriver::OnDown);
+  matrix.setUpEvent(matrixKeyboardDriver::OnUp);
+  matrix.setCycleEndEvent(matrixKeyboardDriver::OnCycleEnd);
 }
 
 void loop() {

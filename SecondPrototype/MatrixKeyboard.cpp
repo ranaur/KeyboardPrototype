@@ -1,6 +1,6 @@
 #include "MatrixKeyboard.h"
 
-MatrixKeyboard::MatrixKeyboard(uint8_t nRows, uint8_t nColumns) : 
+template <uint8_t nRows, uint8_t nColumns> MatrixKeyboard<nRows, nColumns>::MatrixKeyboard() : 
     _nRows(nRows), 
     _nColumns(nColumns), 
     _DownEventCallback((void (*)(MatrixKeyboard *, uint8_t, uint8_t, void*))0),
@@ -18,7 +18,7 @@ MatrixKeyboard::MatrixKeyboard(uint8_t nRows, uint8_t nColumns) :
 };
 
 
-void MatrixKeyboard::setup(const uint8_t *rowPins, const uint8_t *columnPins) {
+template <uint8_t nRows, uint8_t nColumns> void MatrixKeyboard<nRows, nColumns>::setup(const uint8_t *rowPins, const uint8_t *columnPins) {
   _rowPins = rowPins;
   _columnPins = columnPins;
 
@@ -30,9 +30,9 @@ void MatrixKeyboard::setup(const uint8_t *rowPins, const uint8_t *columnPins) {
   for(uint8_t c = 0; c < _nColumns; c++) {
     pinMode(columnPin(c), INPUT_PULLUP);
   }
-}
+};
 
-void MatrixKeyboard::loop(void *obj) {
+template <uint8_t nRows, uint8_t nColumns> void MatrixKeyboard<nRows, nColumns>::loop(void *obj) {
   bool reading = digitalRead(rowPin(_row)) == HIGH ? true : false;
   bool prevReading = getRC(_row, _column);
   if(reading != prevReading) {
@@ -61,4 +61,4 @@ void MatrixKeyboard::loop(void *obj) {
       if(_CycleEndEventCallback) _CycleEndEventCallback(this, obj);
     }
   }
-}
+};

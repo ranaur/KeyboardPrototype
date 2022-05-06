@@ -1,7 +1,7 @@
 #include "USBNativeMatrixKeyboardDriver.h"
 
 
-void USBNativeMatrixKeyboardDriver::OnDown(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj) {
+void USBNativeMatrixKeyboardDriver::OnDown(uint8_t row, uint8_t column, void *obj) {
   const char *keyText = rowColumnMap(row, column);
 
   debug("DOWN ");
@@ -13,7 +13,7 @@ void USBNativeMatrixKeyboardDriver::OnDown(MatrixKeyboard *mk, uint8_t row, uint
   debugln("");  
 }
 
-void USBNativeMatrixKeyboardDriver::OnUp(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj) {
+void USBNativeMatrixKeyboardDriver::OnUp(uint8_t row, uint8_t column, void *obj) {
   const char *keyText = rowColumnMap(row, column);
 
   debug("UP ");
@@ -25,17 +25,14 @@ void USBNativeMatrixKeyboardDriver::OnUp(MatrixKeyboard *mk, uint8_t row, uint8_
   debugln("");  
 }
 
-void USBNativeMatrixKeyboardDriver::OnCycleEnd(MatrixKeyboard *mk, void *obj) {
+void USBNativeMatrixKeyboardDriver::OnCycleEnd(void *obj) {
   debug("CYCLE END ");
   
   debugln("");  
 }
 
-void USBNativeMatrixKeyboardDriver::setup(MatrixKeyboard *mk) {
-  debugln("BEGIN");
-  Keyboard.begin();
-
-  mk->setDownEvent(USBNativeMatrixKeyboardDriver::OnDown);
-  mk->setUpEvent(USBNativeMatrixKeyboardDriver::OnUp);
-  mk->setCycleEndEvent(USBNativeMatrixKeyboardDriver::OnCycleEnd);
+void USBNativeMatrixKeyboardDriver::setup() {
+  //mk->setDownEvent(USBNativeMatrixKeyboardDriver::OnDown);
+  //mk->setUpEvent(USBNativeMatrixKeyboardDriver::OnUp);
+  //mk->setCycleEndEvent(USBNativeMatrixKeyboardDriver::OnCycleEnd);
 }

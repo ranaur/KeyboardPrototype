@@ -9,10 +9,39 @@
 #include "arduino.h"
 #include "MatrixKeyboardDriver.h"
 
-class MatrixKeyboard {
+template <typename T, uint8_t nRows, uint8_t nColumns> class MatrixKeyboardData {
+  private:
+  T _data[nRows][nColumns];
   public:
-    MatrixKeyboard(uint8_t nRows, uint8_t nColumns);
-    void setup( const uint8_t *rowPins, const uint8_t *columnPins);
+  MatrixKeyboardData() { memset((byte *)_data, '\0', sizeof(_data) / sizeof(_data[0][0])); };
+  T getData(uint8_t row, uint8_t column) { return _data[row][column]; };
+  void setData(uint8_t row, uint8_t column, T value) { _data[row % nRows][column % nColumns] = value; };
+};
+
+template <uint8_t nRows, uint8_t nColumns> class BitfieldData {
+  private:
+  uint8_t _data[((nRows * nColumns - 1)/ sizeof(uint8_t)) + 1];
+  public:
+  MatrixKeyboardData() { memset((byte *)_data, '\0', sizeof(_data) / sizeof(_data[0][0])); };
+  bool getData(uint8_t row, uint8_t column) { 
+    uint16_t pos = (row % nRows) * nColumns + (column % nColumns);
+    return _data[pos / sizeof(uint8_t)] >> (pos % sizeof(uint8_t)) & 0x01 == 0x01;
+  };
+  void setData(uint8_t row, uint8_t column, bool value) { 
+    uint16_t pos = (row % nRows) * nColumns + (column % nColumns);
+    uint8_t bitMask = 0x01 << (pos % 8);
+    if(value) {
+      _data[pos / 8] |= bitMask;
+    } else {
+      _data[pos / 8] &= ~bitMask;
+    }
+  };
+};
+
+template <uint8_t nRows, uint8_t nColumns> class MatrixKeyboard {
+  public:
+    MatrixKeyboard(); 
+    void setup(const uint8_t *rowPins, const uint8_t *columnPins);
     void setDownEvent( void (*callback)(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj) ) { _DownEventCallback = callback; };
     void setUpEvent( void (*callback)(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj) ) { _UpEventCallback = callback; };
     void setCycleEndEvent( void (*callback)(MatrixKeyboard *mk, void *obj) ) { _CycleEndEventCallback = callback; };
@@ -43,18 +72,5 @@ class MatrixKeyboard {
     void (*_CycleEndEventCallback)(MatrixKeyboard *mk, void *obj);
 
     uint8_t *matrixRC;
-    void setRC(uint8_t row, uint8_t column, bool value) { 
-      uint16_t pos = row * column;
-      uint8_t bitMask = 0x01 << (pos % 8);
-      if(value) {
-        matrixRC[pos / 8] |= bitMask;
-      } else {
-        matrixRC[pos / 8] &= ~bitMask;
-      }
-    }
-    bool getRC(uint8_t row, uint8_t column) {
-      uint16_t pos = row * column;
-      return matrixRC[pos / 8] >> (pos % 8) & 0x01 == 0x01;
-    }
 };
 #endif

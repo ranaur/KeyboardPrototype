@@ -58,15 +58,6 @@ void setup() {
   }
 #endif
 
-  // Setup pins
-  for(int c = 0; c < nColumns; c++) {
-    pinMode(columnPin(c), OUTPUT);
-    digitalWrite(columnPin(c), HIGH);
-  }
-  for(int r = 0; r < nRows; r++) {
-    pinMode(rowPin(r), INPUT_PULLUP);
-  }
-
   // Initialize state
   for(int c = 0; c < nColumns; c++) {
     for(int r = 0; r < nRows; r++) {
@@ -80,9 +71,18 @@ void setup() {
 }
 
 void loop() {
-  //debugln("NEW LOOP");
+  // Re-intialize the row pins. Allows sharing these pins with other hardware.
   for(int c = 0; c < nColumns; c++) {
-    digitalWrite(columnPin(c - 1), HIGH);
+    pinMode(columnPin(c), OUTPUT);
+    digitalWrite(columnPin(c), HIGH);
+    pinMode(columnPin(c), INPUT_PULLUP);
+  }
+  for(int r = 0; r < nRows; r++) {
+    pinMode(rowPin(r), INPUT_PULLUP);
+  }
+
+  for(int c = 0; c < nColumns; c++) {
+    pinMode(columnPin(c), OUTPUT);
     digitalWrite(columnPin(c), LOW);
 
     for(int r = 0; r < nRows; r++) {
@@ -108,6 +108,8 @@ void loop() {
       rowColumnDebouncingState[r][c] = reading;
       
     }
+    digitalWrite(columnPin(c), HIGH);
+    pinMode(columnPin(c), INPUT);
   }
 }
 
