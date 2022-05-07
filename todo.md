@@ -1,11 +1,18 @@
-# Hardware
+# Milestones
+
+  * Make the membrane Keyboard work (with alt)
+
+# Design Decisions
+
+## Hardware
   * Solder keywire
   * Decide about tensy or pro micro (or STM32, VUSB and other board)
   * Make a board
     * Chip vs Miniboards
     * Put HUB Chip
     * Put audiocard
-# Software
+
+## Software
   * Decide about USB repost descriptor
     * 6KRO + Boot protocol
     * 12KRO / 18KRO multikeyboard
@@ -19,16 +26,7 @@
   * Study about Bluetooth
   * HUB
 
-# Design
-  * BOM
-    @ Keys
-    - Wire
-    - Diodes
-    - Stabilizers
-    - Sockets
-    - Case
-    - Screws
-
+## Physical Design
   * Double keycaps
     * Two keys
     * Stabiizer
@@ -41,4 +39,13 @@
     * Bended Metal
     * 3D printed
   * Keycaps
+
+# Bill of Materials
+  * Keys
+  - Wire
+  - Diodes
+  - Stabilizers
+  - Sockets
+  - Case
+  - Screws
 
