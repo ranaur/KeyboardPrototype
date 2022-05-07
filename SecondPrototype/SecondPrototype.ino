@@ -5,7 +5,7 @@ const uint8_t columnsPins[nColumns] = { 7, 6, 5 };
 
 #include "MatrixKeyboard.h"
 #include "DebouncerMatrixKeyboardAdapter.h"
-#include "DebuggerMatrixKeyboardAdapter.h"
+//#include "DebuggerMatrixKeyboardAdapter.h"
 #include "TransitionMatrixKeyboardAdapter.h"
 #include "RowColumMapperAdapter.h"
 #include "NativeUSBKeycodeAdapter.h"
@@ -22,7 +22,7 @@ const keycode_t rowColumnMappings[nRows][nColumns] = {
 MatrixKeyboard<nRows, nColumns> matrix;
 DebouncerMatrixKeyboardAdapter<nRows, nColumns> debouncer;
 TransitionMatrixKeyboardAdapter<nRows, nColumns> transition;
-DebuggerMatrixKeyboardAdapter<nRows, nColumns> debugger;
+//DebuggerMatrixKeyboardAdapter<nRows, nColumns> debugger;
 RowColumnMapperMatrixKeyboardAdapter<nRows, nColumns> mapper;
 NativeUSBKeycodeAdapter usbdriver;
 
@@ -38,7 +38,7 @@ void setup() {
 #endif
 
   matrix.setup(rowsPins, columnsPins);
-  matrix.setAdapter(&transition);
+  matrix.setAdapter(&debouncer);
   debouncer.setAdapter(&transition);
   transition.setAdapter(&mapper);
   mapper.setAdapter(&usbdriver);
