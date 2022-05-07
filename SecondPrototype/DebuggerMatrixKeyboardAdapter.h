@@ -2,12 +2,14 @@
 #define DEBUGGER_MKA_H
 
 #include "MatrixKeyboard.h"
-#include "RowColumMapperAdapter.h"
+#include "KeycodeAdapter.h"
 
-template <uint8_t nRows, uint8_t nColumns> class DebuggerMatrixKeyboardAdapter : public MatrixKeyboardAdapter<nRows, nColumns>, public KeycodeKeyboardAdapter<nRows, nColumns> {
+template <uint8_t nRows, uint8_t nColumns> class DebuggerMatrixKeyboardAdapter 
+    : public MatrixKeyboardAdapter<nRows, nColumns>, 
+      public KeycodeAdapter {
   public:
     DebouncerMatrixKeyboardAdapter() {};
-        // KeycodeKeyboardAdapter
+        // KeycodeAdapter
     void scanKeyCallback(keycode_t keycode, bool value, bool prevValue) {
       Serial.print("KEYCODE: [");
       Serial.print(keycode, HEX);

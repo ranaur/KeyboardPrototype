@@ -2,14 +2,7 @@
 #define ROWCOLUMN_MKA_H
 
 #include "MatrixKeyboard.h"
-
-typedef uint8_t keycode_t;
-
-template <uint8_t nRows, uint8_t nColumns> class KeycodeKeyboardAdapter {
-  public:
-    virtual void scanKeyCallback(keycode_t keycode, bool value, bool prevValue);
-    virtual void scanEndCallback();
-};
+#include "KeycodeAdapter.h"
 
 template <uint8_t nRows, uint8_t nColumns> class RowColumnMapperMatrixKeyboardAdapter : public MatrixKeyboardAdapter<nRows, nColumns> {
   public:
@@ -35,12 +28,12 @@ template <uint8_t nRows, uint8_t nColumns> class RowColumnMapperMatrixKeyboardAd
     void scanEndCallback(MatrixDataType *bdata) {
       _adapter->scanEndCallback();
     }
-    void setAdapter(KeycodeKeyboardAdapter<nRows, nColumns> *adapter) { 
+    void setAdapter(KeycodeAdapter *adapter) { 
       _adapter = adapter;
     };
 
   private:
-    KeycodeKeyboardAdapter<nRows, nColumns> *_adapter;
+    KeycodeAdapter *_adapter;
     
     keycode_t mapRowColumn(uint8_t row, uint8_t column) {
       return (*_rcmap)[row % nRows][column % nColumns];

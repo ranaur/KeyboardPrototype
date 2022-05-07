@@ -284,4 +284,9 @@
 #define KEY_MEDIA_REFRESH 0xfa
 #define KEY_MEDIA_CALC 0xfb
 
+/**
+ * Returns the HID modifier value from the key code (if it is a modifier keycode), or 0 otherwise
+ */
+#define getHIDModifier(keycode) (((keycode) >= 0xe0 && (keycode) <= 0xe7) ? 1 << (keycode) - 0xe0 : 0)
+
 #endif // USB_HID_KEYS

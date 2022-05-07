@@ -8,9 +8,9 @@ const uint8_t columnsPins[nColumns] = { 7, 6, 5 };
 #include "DebuggerMatrixKeyboardAdapter.h"
 #include "TransitionMatrixKeyboardAdapter.h"
 #include "RowColumMapperAdapter.h"
+#include "NativeUSBKeycodeAdapter.h"
 
 #include "usb_hid_keys.h"
-//#include "USBNative.h"
 
 const keycode_t rowColumnMappings[nRows][nColumns] = {
   { KEY_KP1, KEY_KP2, KEY_KP3 }, 
@@ -24,23 +24,24 @@ DebouncerMatrixKeyboardAdapter<nRows, nColumns> debouncer;
 TransitionMatrixKeyboardAdapter<nRows, nColumns> transition;
 DebuggerMatrixKeyboardAdapter<nRows, nColumns> debugger;
 RowColumnMapperMatrixKeyboardAdapter<nRows, nColumns> mapper;
+NativeUSBKeycodeAdapter usbdriver;
 
 void setup() {
   
-//#ifdef DEBUG
+#ifdef DEBUG
   Serial.begin(9600);
 
   // Wait for USB Serial (Leonardo)
   while (!Serial) {
     yield();
   }
-//#endif
+#endif
 
   matrix.setup(rowsPins, columnsPins);
   matrix.setAdapter(&transition);
   debouncer.setAdapter(&transition);
   transition.setAdapter(&mapper);
-  mapper.setAdapter(&debugger);
+  mapper.setAdapter(&usbdriver);
   mapper.setMap(&rowColumnMappings);
 }
 
