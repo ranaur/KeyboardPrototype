@@ -5,49 +5,33 @@
  * allow three presses: put everythiing on pullup, but the row/column being tested. if gets signal on columns, it is a three key press
  */
 
-#include "Debounce.h"
 #include "arduino.h"
-#include "MatrixKeyboardDriver.h"
 
-template <typename T, uint8_t nRows, uint8_t nColumns> class MatrixKeyboardData {
-  private:
-  T _data[nRows][nColumns];
-  public:
-  MatrixKeyboardData() { memset((byte *)_data, '\0', sizeof(_data) / sizeof(_data[0][0])); };
-  T getData(uint8_t row, uint8_t column) { return _data[row][column]; };
-  void setData(uint8_t row, uint8_t column, T value) { _data[row % nRows][column % nColumns] = value; };
-};
+template <uint8_t nRows, uint8_t nColumns> class MatrixKeyboard;
+//template <uint8_t nRows, uint8_t nColumns> class DebouncerMatrixKeyboardAdapter;
 
-template <uint8_t nRows, uint8_t nColumns> class BitfieldData {
-  private:
-  uint8_t _data[((nRows * nColumns - 1)/ sizeof(uint8_t)) + 1];
+#include "Bidimensional.h"
+
+#define MatrixDataType BidimensionalData<bool, nRows, nColumns>
+
+template <uint8_t nRows, uint8_t nColumns> class MatrixKeyboardAdapter {
   public:
-  MatrixKeyboardData() { memset((byte *)_data, '\0', sizeof(_data) / sizeof(_data[0][0])); };
-  bool getData(uint8_t row, uint8_t column) { 
-    uint16_t pos = (row % nRows) * nColumns + (column % nColumns);
-    return _data[pos / sizeof(uint8_t)] >> (pos % sizeof(uint8_t)) & 0x01 == 0x01;
-  };
-  void setData(uint8_t row, uint8_t column, bool value) { 
-    uint16_t pos = (row % nRows) * nColumns + (column % nColumns);
-    uint8_t bitMask = 0x01 << (pos % 8);
-    if(value) {
-      _data[pos / 8] |= bitMask;
-    } else {
-      _data[pos / 8] &= ~bitMask;
-    }
-  };
+    MatrixKeyboardAdapter() {};
+    virtual void scanKeyCallback(uint8_t row, uint8_t column, bool value, bool prevValue);
+    virtual void scanEndCallback(MatrixDataType *bdata);
 };
 
 template <uint8_t nRows, uint8_t nColumns> class MatrixKeyboard {
   public:
     MatrixKeyboard(); 
     void setup(const uint8_t *rowPins, const uint8_t *columnPins);
-    void setDownEvent( void (*callback)(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj) ) { _DownEventCallback = callback; };
-    void setUpEvent( void (*callback)(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj) ) { _UpEventCallback = callback; };
-    void setCycleEndEvent( void (*callback)(MatrixKeyboard *mk, void *obj) ) { _CycleEndEventCallback = callback; };
-    void loop(void *obj);
+    void loop();
+    void setAdapter(MatrixKeyboardAdapter<nRows, nColumns> *adapter) { _adapter = adapter; };
 
   private:
+    MatrixKeyboardAdapter<nRows, nColumns> *_adapter;
+    uint8_t *_rowPins;
+    uint8_t *_columnPins;
     uint8_t rowPin(int index) {
       while(index < 0) index += _nRows;
       return _rowPins[index % _nRows];
@@ -60,17 +44,71 @@ template <uint8_t nRows, uint8_t nColumns> class MatrixKeyboard {
     uint8_t _row;
     uint8_t _column;
 
-    Debounce **debounceHandlers;    
-    
     uint8_t _nRows;
     uint8_t _nColumns;
-    uint8_t *_rowPins;
-    uint8_t *_columnPins;
 
-    void (*_DownEventCallback)(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj);
-    void (*_UpEventCallback)(MatrixKeyboard *mk, uint8_t row, uint8_t column, void *obj);
-    void (*_CycleEndEventCallback)(MatrixKeyboard *mk, void *obj);
+    MatrixDataType matrix;
+};
 
-    uint8_t *matrixRC;
+template <uint8_t nRows, uint8_t nColumns> MatrixKeyboard<nRows, nColumns>::MatrixKeyboard() : 
+    _nRows(nRows), 
+    _nColumns(nColumns), 
+    _adapter((MatrixKeyboardAdapter<nRows, nColumns> *)0),
+    _rowPins((uint8_t *)0),
+    _columnPins((uint8_t *)0),
+    _row(0), 
+    _column(0) {
+      matrix.setAll(HIGH);
+};
+
+template <uint8_t nRows, uint8_t nColumns> void MatrixKeyboard<nRows, nColumns>::setup(const uint8_t *rowPins, const uint8_t *columnPins) {
+  _rowPins = rowPins;
+  _columnPins = columnPins;
+
+  // Setup pins
+  for(uint8_t r = 0; r < _nRows; r++) {
+    pinMode(rowPin(r), INPUT_PULLUP);
+  }
+
+  for(uint8_t c = 0; c < _nColumns; c++) {
+    pinMode(columnPin(c), INPUT_PULLUP);
+  }
+};
+
+template <uint8_t nRows, uint8_t nColumns> void MatrixKeyboard<nRows, nColumns>::loop() {
+  bool reading = digitalRead(rowPin(_row)) == HIGH ? true : false;
+  bool prevReading = matrix.getData(_row, _column);
+/*
+      Serial.print("RAW: [");
+      Serial.print(_row);
+      Serial.print(", ");
+      Serial.print(_column);
+      Serial.print("] = ");
+      Serial.print(reading);
+      Serial.print(" (prev: ");
+      Serial.print(prevReading);
+      Serial.print(", pin(r/c): ");
+      Serial.print(rowPin(_row));
+      Serial.print("/");
+      Serial.print(columnPin(_column));
+      Serial.println(")");
+ */ 
+  _adapter->scanKeyCallback(_row, _column, reading, prevReading);
+  matrix.setData(_row, _column, reading);
+  
+  _row++; // Next Key in column
+  if(_row >= _nRows) { // Next Column
+    digitalWrite(columnPin(_column), HIGH);
+    pinMode(columnPin(_column), INPUT_PULLUP);
+    _column++;
+    pinMode(columnPin(_column), OUTPUT);
+    digitalWrite(columnPin(_column), LOW);
+    _row = 0;
+    
+    if(_column >= _nColumns) { // End of matrix scan
+      _adapter->scanEndCallback(&matrix);
+      _column = 0;
+    }
+  }
 };
 #endif
