@@ -1,7 +1,9 @@
 # Milestones
 
   * Make the membrane Keyboard work (with alt)
-
+  * Detect USB rollover and fix them
+  * Detect Phantom/Ghosting reading other column pins. If they get a zero, there is "leakage".
+ 
 # Design Decisions
 
 ## Hardware

@@ -1,4 +1,4 @@
-#include "Keyboard.h"
+#include "USBKeycodeKeyboard.h"
 
 //#define DEBUG
 #undef DEBUG
@@ -22,18 +22,20 @@ const int8_t nColumns = sizeof(columnsPins) / sizeof(pin_t);
 const pin_t rowsPins[] = { 11, 10, 9, 8 };
 const int8_t nRows = sizeof(rowsPins) / sizeof(pin_t);
 
-const char *rowColumnMappings[nRows][nColumns] = {
-  { "1", "2", "3" }, 
-  { "4", "5", "6" }, 
-  { "7", "8", "9" }, 
-  { "*", "0", "#" }
+const uint8_t rowColumnMappings[nRows][nColumns] = {
+  { KEY_KP1, KEY_KP2, KEY_KP3 }, 
+  { KEY_KP4, KEY_KP5, KEY_KP6 }, 
+  { KEY_KP7, KEY_KP8, KEY_KP9 }, 
+  { KEY_LEFTALT, KEY_KP0, KEY_KPENTER }
 };
 
 state_t rowColumnDebouncingState[nRows][nColumns];
 state_t rowColumnState[nRows][nColumns];
 unsigned long rowColumnDebouncingTime[nRows][nColumns];
 
-const char *rowColumnMap(int row, int column) {
+USBKeycodeKeyboard driver;
+
+const uint8_t rowColumnMap(int row, int column) {
   return rowColumnMappings[row][column];
 }
 
@@ -66,8 +68,6 @@ void setup() {
       rowColumnDebouncingTime[r][c] = 0;
     }
   }
-
-  Keyboard.begin();
 }
 
 void loop() {
@@ -114,25 +114,15 @@ void loop() {
 }
 
 void rowColumnDown(int row, int column) {
-  const char *keyText = rowColumnMap(row, column);
-
-  debug("DOWN ");
-  
-  for(int i = 0; keyText[i] != '\0'; i++) {
-    Keyboard.press(keyText[i]);
-    debug(keyText[i]);
-  }
-  debugln("");  
+  Serial.print("DOWN: ");
+  Serial.println(rowColumnMap(row, column), HEX);
+  driver.press(rowColumnMap(row, column));
+  driver.send();
 }
 
 void rowColumnUp(int row, int column) {
-  const char *keyText = rowColumnMap(row, column);
-
-  debug("UP ");
-  
-  for(int i = 0; keyText[i] != '\0'; i++) {
-    Keyboard.release(keyText[i]);
-    debug(keyText[i]);
-  }
-  debugln("");  
+  Serial.print("UP: ");
+  Serial.println(rowColumnMap(row, column), HEX);
+  driver.release(rowColumnMap(row, column));
+  driver.send();
 }
